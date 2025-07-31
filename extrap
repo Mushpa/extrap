@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Derivada por Definición</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/12.4.1/math.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 30px;
+      background-color: #f9f9f9;
+    }
+    h1 {
+      color: #333;
+    }
+    input, button {
+      font-size: 16px;
+      padding: 8px;
+      margin: 5px 0;
+    }
+    .resultado {
+      margin-top: 20px;
+      background: #fff;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+    }
+    code {
+      background-color: #eee;
+      padding: 2px 4px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Calculadora de Derivadas por Definición</h1>
+
+  <label>Ingresa la función f(x):</label><br>
+  <input type="text" id="funcion" placeholder="Ejemplo: x^2 + 3*x"><br>
+  <label>Valor de x:</label><br>
+  <input type="number" id="valorX" placeholder="Ejemplo: 1"><br>
+  <button onclick="calcularDerivada()">Calcular derivada por definición</button>
+
+  <div class="resultado" id="resultado"></div>
+
+  <script>
+    function calcularDerivada() {
+      const fInput = document.getElementById("funcion").value;
+      const x0 = parseFloat(document.getElementById("valorX").value);
+      const h = math.parse('h');
+      const x = math.parse('x');
+      const f = math.parse(fInput);
+
+      // f(x+h)
+      const fx_h = f.transform(function (node) {
+        if (node.isSymbolNode && node.name === 'x') {
+          return math.parse('(x + h)');
+        }
+        return node;
+      });
+
+      // f(x+h) - f(x)
+      const diferencia = math.simplify(`(${fx_h.toString()}) - (${f.toString()})`);
+
+      // [(f(x+h) - f(x)) / h]
+      const cociente = math.simplify(`(${diferencia.toString()}) / h`);
+
+      // Sustituyendo x = x0
+      const cocienteEnX0 = cociente.evaluate({ x: x0 });
+
+      // Tomamos el límite cuando h → 0
+      const derivada = math.simplify(cocienteEnX0).evaluate({ h: 0 });
+
+      // Mostrar pasos
+      const resultadoHTML = `
+        <h2>Pasos:</h2>
+        <p><strong>1. f(x):</strong> <code>${f.toString()}</code></p>
+        <p><strong>2. f(x + h):</strong> <code>${fx_h.toString()}</code></p>
+        <p><strong>3. Diferencia:</strong> <code>(${fx_h.toString()}) - (${f.toString()}) = ${diferencia.toString()}</code></p>
+        <p><strong>4. Cociente:</strong> <code>(${diferencia.toString()}) / h = ${cociente.toString()}</code></p>
+        <p><strong>5. Sustituyendo x = ${x0}:</strong> <code>${cocienteEnX0.toString()}</code></p>
+        <p><strong>6. Límite cuando h → 0:</strong> <code>${derivada}</code></p>
+        <h3>Resultado final: f'(${x0}) = <strong>${derivada}</strong></h3>
+      `;
+
+      document.getElementById("resultado").innerHTML = resultadoHTML;
+    }
+  </script>
+</body>
+</html>
